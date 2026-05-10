@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CROWNÆTH — Hard Techno DJ & Producer</title>
+<meta name="description" content="CROWNÆTH — Hard Techno DJ & Producer. 155+ BPM. Bookings, mixes, releases." />
+<meta property="og:title" content="CROWNÆTH" />
+<meta property="og:description" content="Hard Techno // 155+ BPM // Underground" />
+<meta name="theme-color" content="#000000" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --fg: #ffffff;
+    --muted: #6b6b6b;
+    --line: #1a1a1a;
+    --accent: #ff1a1a; /* blood red */
+    --accent-glow: rgba(255, 26, 26, 0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--accent); color: #fff; }
+
+  a { color: var(--fg); text-decoration: none; transition: color .2s; }
+  a:hover { color: var(--accent); }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .logo {
+    font-family: 'Anton', sans-serif;
+    font-size: 20px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  nav .logo-mark { width: 28px; height: 28px; filter: invert(1) drop-shadow(0 0 6px var(--accent-glow)); }
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 32px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 24px;
+    position: relative;
+  }
+  .hero .meta-top {
+    position: absolute;
+    top: 100px;
+    left: 40px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .hero .meta-bottom {
+    position: absolute;
+    bottom: 60px;
+    right: 40px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .hero-mark {
+    width: clamp(140px, 20vw, 240px);
+    margin-bottom: 40px;
+    filter: invert(1) drop-shadow(0 0 30px var(--accent-glow)) drop-shadow(0 0 60px var(--accent-glow));
+    animation: float 6s ease-in-out infinite;
+  }
+  .hero-mark img { width: 100%; height: auto; display: block; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .hero h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(48px, 13vw, 220px);
+    letter-spacing: -2px;
+    line-height: 0.9;
+    text-transform: uppercase;
+    text-shadow: 0 0 80px var(--accent-glow);
+    white-space: nowrap;
+  }
+  .hero .tagline {
+    margin-top: 32px;
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    max-width: 90vw;
+    line-height: 2;
+  }
+  .hero .tagline span { color: var(--accent); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  /* SECTIONS */
+  section {
+    padding: 120px 40px;
+    border-top: 1px solid var(--line);
+    position: relative;
+  }
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .section-label::before { content: '// '; color: var(--muted); }
+
+  h2 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 60px;
+  }
+
+  /* ABOUT */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1.2fr;
+    gap: 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  .portrait {
+    width: 100%;
+    aspect-ratio: 3 / 5;
+    background: #0a0a0a;
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+    filter: grayscale(1) contrast(1.1);
+    transition: filter .4s;
+  }
+  .portrait:hover { filter: grayscale(0.5) contrast(1.1); }
+  .portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .portrait .placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 24px;
+  }
+  .portrait::after {
+    content: 'CROWNÆTH / 2026';
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    z-index: 2;
+  }
+  .about-grid .label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .about-grid p {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-top: 80px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+  }
+  .stat .num {
+    font-family: 'Anton', sans-serif;
+    font-size: 64px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat .desc {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* MUSIC */
+  .player-wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .player-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .player-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+  }
+  .player-tag {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 6px 14px;
+    border: 1px solid var(--accent);
+  }
+  .player-frame {
+    border: 1px solid var(--line);
+    background: #0a0a0a;
+    box-shadow: 0 0 60px var(--accent-glow);
+    transition: box-shadow .3s;
+  }
+  .player-frame:hover { box-shadow: 0 0 100px var(--accent-glow); }
+  .player-frame iframe { display: block; width: 100%; }
+  .player-cta {
+    display: inline-block;
+    margin-top: 32px;
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 6px;
+    transition: padding .2s;
+  }
+  .player-cta span { display: inline-block; transition: transform .2s; margin-left: 6px; }
+  .player-cta:hover span { transform: translateX(8px); }
+  .player-note { font-size: 14px; color: #999; line-height: 1.7; margin-top: 24px; max-width: 600px; font-style: italic; }
+
+  /* GIGS */
+  .gigs { max-width: 1400px; margin: 0 auto; }
+  .gig {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr 120px;
+    gap: 40px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+    transition: background .2s;
+  }
+  .gig:hover { background: rgba(255, 26, 26, 0.05); padding-left: 16px; padding-right: 16px; }
+  .gig .date {
+    font-family: 'Anton', sans-serif;
+    font-size: 32px;
+    line-height: 1;
+  }
+  .gig .date small {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+  .gig .venue {
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .gig .city {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .gig .ticket {
+    text-align: right;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .gig.sold-out .ticket { color: var(--muted); text-decoration: line-through; }
+
+  /* CONTACT */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .contact-block .label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .contact-block .email {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(28px, 4vw, 48px);
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    word-break: break-all;
+  }
+  .contact-block .email:hover { color: var(--accent); }
+
+  .socials {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .socials a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .socials a:hover { padding-left: 16px; }
+  .socials .arrow { color: var(--muted); transition: transform .2s; }
+  .socials a:hover .arrow { transform: translateX(8px); color: var(--accent); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    nav ul { display: none; }
+    section { padding: 80px 20px; }
+    .hero .meta-top, .hero .meta-bottom { display: none; }
+    .about-grid { grid-template-columns: 1fr; gap: 32px; }
+    .portrait { aspect-ratio: 4 / 5; max-width: 400px; }
+    .stats { grid-template-columns: 1fr; gap: 24px; }
+    .gig { grid-template-columns: 80px 1fr; gap: 16px; }
+    .gig .city, .gig .ticket { grid-column: 2; text-align: left; }
+    .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+    footer { flex-direction: column; gap: 12px; padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <img class="logo-mark" src="logo.png" alt="CROWNÆTH" />
+    <span>CROWNÆTH</span>
+  </div>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#music">Music</a></li>
+    <li><a href="#gigs">Gigs</a></li>
+    <li><a href="#contact">Booking</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="meta-top">EST. 2023 / HESSEN</div>
+  <div class="hero-mark">
+    <img src="logo.png" alt="CROWNÆTH" />
+  </div>
+  <h1>CROWNÆTH</h1>
+  <div class="tagline">Hard Techno <span>//</span> Industrial <span>//</span> Neo Rave <span>//</span> Hard Dance <span>//</span> Raw <span>//</span> 155+ BPM</div>
+  <div class="meta-bottom">N 50.439° E 8.665°</div>
+  <div class="scroll-hint">SCROLL ↓</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">01 / About</div>
+  <h2>Sound that<br/>hits hard.</h2>
+  <div class="about-grid">
+    <div class="portrait">
+      <!-- Replace src below with your portrait file. Save it as portrait.jpg in the same folder as this HTML. -->
+      <img src="portrait.jpg" alt="CROWNÆTH" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+      <div class="placeholder" style="display:none;">[ Save your portrait as<br/>portrait.jpg in this folder ]</div>
+    </div>
+    <div class="label">CROWNÆTH<br/>Hard Techno DJ &amp; Producer<br/>Based near Butzbach / Frankfurt<br/><br/>Genres:<br/>Hard Techno, Industrial,<br/>Hard Dance, Neo Rave,<br/>Hardtech, Raw Style,<br/>Dark Techno</div>
+    <div>
+      <p>Music has always been there. Long before the decks, CROWNÆTH was the one running the speakers at every party — until enough people said the same thing: "you've got the sound, start playing it out." Three years later, DJing isn't a hobby anymore. It's a part of him.</p>
+      <p>The sound moves between Hard Techno, Industrial, Hard Dance and Neo Rave — with detours into Hardtech, Raw Style and the slower, hypnotic Dark Techno that shaped him from the start. Fast, raw, hypnotic. Built for sweat, smoke and 4am energy.</p>
+      <p>Six months deep into producing his own tracks. Cut his teeth in small clubs, warehouses and underground raves across Hessen — the kind of nights that don't make the lineup posters but stay in your head for weeks.</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="num">3</div>
+      <div class="desc">Years DJing</div>
+    </div>
+    <div class="stat">
+      <div class="num">XX</div>
+      <div class="desc">Shows Played</div>
+    </div>
+    <div class="stat">
+      <div class="num">∞</div>
+      <div class="desc">BPM Energy</div>
+    </div>
+  </div>
+</section>
+
+<!-- MUSIC -->
+<section id="music">
+  <div class="section-label">02 / Music</div>
+  <h2>First Glimpse.<br/>More to come.</h2>
+  <div class="player-wrap">
+    <div class="player-meta">
+      <span class="player-num">001 / TEASER</span>
+      <span class="player-tag">UNRELEASED — NIGHTFREQ PSYCHOSIS</span>
+    </div>
+    <div class="player-frame">
+      <iframe width="100%" height="450" scrolling="no" frameborder="no" allow="autoplay"
+        src="https://w.soundcloud.com/player/?url=https%3A%2F%2Fsoundcloud.com%2Fuser-726135259%2Fnightfreqpsychosis%2Fs-aNy1t6MypCg&color=%23ff1a1a&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true">
+      </iframe>
+    </div>
+    <p class="player-note">Self-produced. Raw. A first taste of what's coming. Full release dropping soon — promo set follows.</p>
+    <a class="player-cta" href="https://on.soundcloud.com/Li3pe" target="_blank" rel="noopener">
+      Follow on SoundCloud for the drop <span>→</span>
+    </a>
+  </div>
+</section>
+
+<!-- GIGS -->
+<section id="gigs">
+  <div class="section-label">03 / Tour</div>
+  <h2>Upcoming<br/>Shows.</h2>
+  <div class="gigs">
+    <div class="gig">
+      <div class="date">15<small>JUN '26</small></div>
+      <div class="venue">Venue Name</div>
+      <div class="city">Berlin / DE</div>
+      <div class="ticket"><a href="#">Tickets →</a></div>
+    </div>
+    <div class="gig">
+      <div class="date">22<small>JUN '26</small></div>
+      <div class="venue">Club Name</div>
+      <div class="city">Amsterdam / NL</div>
+      <div class="ticket"><a href="#">Tickets →</a></div>
+    </div>
+    <div class="gig sold-out">
+      <div class="date">05<small>JUL '26</small></div>
+      <div class="venue">Festival Name</div>
+      <div class="city">Leipzig / DE</div>
+      <div class="ticket">Sold Out</div>
+    </div>
+    <div class="gig">
+      <div class="date">19<small>JUL '26</small></div>
+      <div class="venue">Warehouse Rave</div>
+      <div class="city">London / UK</div>
+      <div class="ticket"><a href="#">Tickets →</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label">04 / Contact</div>
+  <h2>Bookings<br/>&amp; Inquiries.</h2>
+  <div class="contact-grid">
+    <div class="contact-block">
+      <div class="label">Bookings &amp; Inquiries</div>
+      <a class="email" href="mailto:crownaethmusic@gmail.com">crownaethmusic@gmail.com</a>
+    </div>
+    <div class="contact-block">
+      <div class="label">Follow</div>
+      <div class="socials">
+        <a href="https://www.instagram.com/crownaeth" target="_blank" rel="noopener">Instagram <span class="arrow">→</span></a>
+        <a href="https://on.soundcloud.com/Li3pe" target="_blank" rel="noopener">SoundCloud <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>© 2026 CROWNÆTH</div>
+  <div>All rights reserved</div>
+</footer>
+
+<script>
+  // Subtle reveal on scroll
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('section:not(.hero), .mix, .gig').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'opacity .8s ease, transform .8s ease';
+    obs.observe(el);
+  });
+</script>
+
+</body>
+</html>

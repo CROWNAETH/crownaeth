@@ -6,6 +6,13 @@
 <title>CROWNÆTH — AI Avatar</title>
 <meta name="description" content="Sprich mit einem animierten KI-Gesicht — Lippensynchronisation, Mimik & Gestik, verbunden mit einem Sprachmodell deiner Wahl." />
 <meta name="theme-color" content="#000000" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CROWNÆTH AI" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
@@ -935,6 +942,14 @@
     setTimeout(openModal, 400);
   }
   addMessage('assistant', 'Hey! Ich bin der CROWNÆTH AI Avatar. Verbinde mich oben rechts (⚙) mit deinem Sprachmodell — dann können wir reden.');
+
+  /* PWA: register service worker so the app is installable on phones
+   * (Android: "Zum Startbildschirm hinzufügen" → läuft im Vollbild wie eine App) */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
 })();
 </script>
 </body>

@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CROWNÆTH — AI Avatar</title>
+<meta name="description" content="Sprich mit einem animierten KI-Gesicht — Lippensynchronisation, Mimik & Gestik, verbunden mit einem Sprachmodell deiner Wahl." />
+<meta name="theme-color" content="#000000" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CROWNÆTH AI" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --fg: #ffffff;
+    --muted: #6b6b6b;
+    --line: #1a1a1a;
+    --accent: #ff1a1a;
+    --accent-glow: rgba(255, 26, 26, 0.4);
+    --skin: #f3cba9;
+    --skin-shadow: #d9a87f;
+    --hair: #ecc878;
+    --hair-dark: #d2a050;
+    --iris: #6fb3da;
+    --lip: #d8616f;
+    --brow: #b8915f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: var(--muted); text-decoration: none; transition: color .2s; }
+  a:hover { color: var(--accent); }
+  ::selection { background: var(--accent); color: #fff; }
+
+  /* HEADER */
+  header.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    font-family: 'Anton', sans-serif;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand small {
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 2px;
+    border: 1px solid var(--accent);
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+  .header-actions { display: flex; gap: 12px; align-items: center; }
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--fg);
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: border-color .2s, color .2s, transform .2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(20deg); }
+  .back-link {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 10px 16px;
+  }
+  .back-link:hover { border-color: var(--accent); }
+
+  /* MAIN LAYOUT */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: 0;
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  }
+
+  /* AVATAR STAGE */
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    border-right: 1px solid var(--line);
+    position: relative;
+  }
+  @media (max-width: 900px) { .stage { border-right: none; border-bottom: 1px solid var(--line); padding: 24px; } }
+
+  .avatar-ring {
+    position: relative;
+    width: clamp(220px, 32vw, 380px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .avatar-ring::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .avatar-ring.listening::before {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0 var(--accent-glow);
+    animation: pulse-ring 1.4s ease-out infinite;
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+    100% { box-shadow: 0 0 0 26px rgba(255,26,26,0); }
+  }
+  #avatar-svg { width: 100%; height: 100%; filter: drop-shadow(0 0 26px var(--accent-glow)); }
+  #face-group { transform-box: fill-box; transform-origin: center; }
+  .hair-back, .hair-front { fill: url(#hairGrad); }
+  .hair-strand { stroke: var(--hair-dark); stroke-width: 1.3; fill: none; opacity: 0.32; stroke-linecap: round; }
+  .face-shape { fill: url(#skinGrad); stroke: rgba(150,100,70,0.25); stroke-width: 1; }
+  .ear { fill: url(#skinGrad); stroke: rgba(150,100,70,0.25); stroke-width: 1; }
+  .jaw-shade { fill: url(#shadowGrad); }
+  .blush { fill: url(#blushGrad); }
+  .nose { stroke: var(--skin-shadow); stroke-width: 1.4; fill: none; opacity: 0.45; stroke-linecap: round; }
+  .nose-shadow { fill: url(#shadowGrad); opacity: 0.6; }
+  .eyebrow { transform-box: fill-box; transform-origin: center; }
+  .eyebrow .brow-base { stroke: var(--brow); stroke-width: 4; fill: none; stroke-linecap: round; }
+  .eyebrow .brow-hl { stroke: #e2c48d; stroke-width: 1.5; fill: none; stroke-linecap: round; opacity: 0.55; }
+  .eye { transform-box: fill-box; transform-origin: center; }
+  .eyelid-crease { stroke: var(--skin-shadow); stroke-width: 1; fill: none; opacity: 0.32; stroke-linecap: round; }
+  .undereye { fill: url(#shadowGrad); opacity: 0.4; }
+  .eye-sclera { fill: #fffaf4; stroke: rgba(80,50,30,0.18); stroke-width: 1; }
+  .iris { fill: url(#irisGrad); }
+  .iris-ring { fill: none; stroke: #2c4a63; stroke-width: 0.8; opacity: 0.6; }
+  .pupil-dot { fill: #241b14; }
+  .eye-highlight { fill: #ffffff; opacity: 0.95; }
+  .eyelash { stroke: #4a3a2a; stroke-width: 1.5; stroke-linecap: round; }
+  .mouth { fill: url(#lipGrad); stroke: rgba(120,30,40,0.3); stroke-width: 1; }
+  .lip-highlight { fill: #ffffff; opacity: 0.18; }
+
+  .status-line {
+    margin-top: 28px;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    height: 16px;
+  }
+  .expr-label {
+    margin-top: 6px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* CHAT PANEL */
+  .chat-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 32px;
+  }
+  .chat-panel h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(28px, 4vw, 40px);
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+  .chat-panel .sub {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .transcript {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 200px;
+  }
+  .msg { max-width: 86%; padding: 12px 16px; border-radius: 4px; font-size: 13px; line-height: 1.6; }
+  .msg.user { align-self: flex-end; background: rgba(255,26,26,0.08); border: 1px solid var(--accent); }
+  .msg.assistant { align-self: flex-start; background: #0a0a0a; border: 1px solid var(--line); }
+  .msg .role {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .msg.user .role { color: var(--accent); }
+
+  .input-row { display: flex; gap: 10px; margin-top: 18px; }
+  .input-row input[type="text"] {
+    flex: 1;
+    background: #0a0a0a;
+    border: 1px solid var(--line);
+    color: var(--fg);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    padding: 14px 16px;
+    border-radius: 4px;
+    outline: none;
+  }
+  .input-row input[type="text"]:focus { border-color: var(--accent); }
+  .round-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--fg);
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .2s, color .2s, background .2s;
+    flex-shrink: 0;
+  }
+  .round-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .round-btn.mic.active { background: var(--accent); border-color: var(--accent); color: #000; animation: mic-pulse 1.2s infinite; }
+  @keyframes mic-pulse { 0%,100% { box-shadow: 0 0 0 0 var(--accent-glow); } 50% { box-shadow: 0 0 0 10px rgba(255,26,26,0); } }
+  .round-btn.send { border-color: var(--accent); color: var(--accent); }
+  .round-btn.send:hover { background: var(--accent); color: #000; }
+  .hint { margin-top: 12px; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 200;
+    padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #0a0a0a;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    width: 100%; max-width: 520px;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 32px;
+  }
+  .modal h2 {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .modal .modal-sub { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--line);
+    color: var(--fg);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    padding: 12px 14px;
+    border-radius: 4px;
+    outline: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .field .field-note { margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 12px; }
+  .btn {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 12px 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--fg);
+    transition: border-color .2s, background .2s, color .2s;
+  }
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.primary:hover { background: var(--accent); color: #000; }
+  .btn.ghost:hover { border-color: var(--fg); }
+  .key-warning {
+    margin-top: 22px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .key-warning b { color: var(--accent); }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #000; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">CROWNÆTH <small>AI AVATAR</small></div>
+  <div class="header-actions">
+    <a class="back-link" href="index.html">← Zur Hauptseite</a>
+    <button class="icon-btn" id="settings-btn" title="Einstellungen / API-Key" aria-label="Einstellungen">⚙</button>
+  </div>
+</header>
+
+<main>
+  <section class="stage">
+    <div class="avatar-ring" id="avatar-ring">
+      <svg id="avatar-svg" viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="skinGrad" cx="50%" cy="32%" r="75%">
+            <stop offset="0%" stop-color="#fce4cf"></stop>
+            <stop offset="55%" stop-color="#f3cba9"></stop>
+            <stop offset="100%" stop-color="#dba87e"></stop>
+          </radialGradient>
+          <linearGradient id="hairGrad" x1="0%" y1="0%" x2="15%" y2="100%">
+            <stop offset="0%" stop-color="#f7e0a0"></stop>
+            <stop offset="55%" stop-color="#ecc878"></stop>
+            <stop offset="100%" stop-color="#d2a050"></stop>
+          </linearGradient>
+          <radialGradient id="irisGrad" cx="40%" cy="38%" r="62%">
+            <stop offset="0%" stop-color="#cdeaf8"></stop>
+            <stop offset="48%" stop-color="#6fb3da"></stop>
+            <stop offset="100%" stop-color="#3c6e92"></stop>
+          </radialGradient>
+          <linearGradient id="lipGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#c84f60"></stop>
+            <stop offset="100%" stop-color="#e88c97"></stop>
+          </linearGradient>
+          <radialGradient id="blushGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#e8909a" stop-opacity="0.4"></stop>
+            <stop offset="100%" stop-color="#e8909a" stop-opacity="0"></stop>
+          </radialGradient>
+          <radialGradient id="shadowGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#9a6c4a" stop-opacity="0.3"></stop>
+            <stop offset="100%" stop-color="#9a6c4a" stop-opacity="0"></stop>
+          </radialGradient>
+          <filter id="soften" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="3.2"></feGaussianBlur>
+          </filter>
+        </defs>
+        <g id="face-group">
+          <path class="hair-back" d="M150,60 C98,60 66,115 66,195 C66,255 94,308 120,328 L128,288 C108,255 102,205 108,158 C113,115 129,92 150,92 C171,92 187,115 192,158 C198,205 192,255 172,288 L180,328 C206,308 234,255 234,195 C234,115 202,60 150,60 Z"></path>
+          <path class="hair-strand" d="M104,140 C112,200 107,262 119,322"></path>
+          <path class="hair-strand" d="M196,140 C188,200 193,262 181,322"></path>
+          <path class="hair-strand" d="M132,108 C129,180 131,252 129,320"></path>
+          <path class="hair-strand" d="M168,108 C171,180 169,252 171,320"></path>
+
+          <ellipse class="ear" cx="84" cy="205" rx="9" ry="14"></ellipse>
+          <ellipse class="ear" cx="216" cy="205" rx="9" ry="14"></ellipse>
+          <path class="face-shape" d="M150,95 C112,95 88,135 88,198 C88,255 116,298 150,312 C184,298 212,255 212,198 C212,135 188,95 150,95 Z"></path>
+
+          <ellipse class="jaw-shade" cx="106" cy="272" rx="17" ry="28" filter="url(#soften)"></ellipse>
+          <ellipse class="jaw-shade" cx="194" cy="272" rx="17" ry="28" filter="url(#soften)"></ellipse>
+          <ellipse class="blush" cx="119" cy="234" rx="19" ry="12" filter="url(#soften)"></ellipse>
+          <ellipse class="blush" cx="181" cy="234" rx="19" ry="12" filter="url(#soften)"></ellipse>
+
+          <path class="nose" d="M150,212 Q145,228 150,236 Q154,238 150,240"></path>
+          <ellipse class="nose-shadow" cx="150" cy="239" rx="7" ry="2.6" filter="url(#soften)"></ellipse>
+
+          <path class="hair-front" d="M90,150 C105,118 132,105 150,105 C168,105 195,118 210,150 C193,128 174,118 150,118 C126,118 107,128 90,150 Z"></path>
+
+          <g class="eyebrow" id="brow-l">
+            <path class="brow-base" d="M-17,4 Q0,-8 17,4"></path>
+            <path class="brow-hl" d="M-12,1.5 Q0,-5 12,1.5"></path>
+          </g>
+          <g class="eyebrow" id="brow-r">
+            <path class="brow-base" d="M-17,4 Q0,-8 17,4"></path>
+            <path class="brow-hl" d="M-12,1.5 Q0,-5 12,1.5"></path>
+          </g>
+
+          <ellipse class="undereye" cx="120" cy="208" rx="15" ry="5" filter="url(#soften)"></ellipse>
+          <ellipse class="undereye" cx="180" cy="208" rx="15" ry="5" filter="url(#soften)"></ellipse>
+          <path class="eyelid-crease" d="M104,189 Q120,182 137,189"></path>
+          <path class="eyelid-crease" d="M163,189 Q180,182 196,189"></path>
+
+          <g class="eye" id="eye-l">
+            <ellipse class="eye-sclera" rx="17" ry="10"></ellipse>
+            <g class="pupil-wrap" id="pupil-wrap-l">
+              <circle class="iris" r="7"></circle>
+              <circle class="iris-ring" r="7"></circle>
+              <circle class="pupil-dot" r="3.2"></circle>
+              <circle class="eye-highlight" cx="-2.6" cy="-2.6" r="1.7"></circle>
+              <circle class="eye-highlight" cx="2.4" cy="2" r="0.8"></circle>
+            </g>
+            <path class="eyelash" d="M-16,-6.5 L-20,-9"></path>
+            <path class="eyelash" d="M-9,-9.5 L-11,-13"></path>
+            <path class="eyelash" d="M-1,-10 L-1,-14"></path>
+            <path class="eyelash" d="M6,-9 L9,-12.5"></path>
+          </g>
+          <g class="eye" id="eye-r">
+            <ellipse class="eye-sclera" rx="17" ry="10"></ellipse>
+            <g class="pupil-wrap" id="pupil-wrap-r">
+              <circle class="iris" r="7"></circle>
+              <circle class="iris-ring" r="7"></circle>
+              <circle class="pupil-dot" r="3.2"></circle>
+              <circle class="eye-highlight" cx="-2.6" cy="-2.6" r="1.7"></circle>
+              <circle class="eye-highlight" cx="2.4" cy="2" r="0.8"></circle>
+            </g>
+            <path class="eyelash" d="M16,-6.5 L20,-9"></path>
+            <path class="eyelash" d="M9,-9.5 L11,-13"></path>
+            <path class="eyelash" d="M1,-10 L1,-14"></path>
+            <path class="eyelash" d="M-6,-9 L-9,-12.5"></path>
+          </g>
+
+          <path class="mouth" id="mouth"></path>
+          <ellipse class="lip-highlight" id="lip-highlight" cx="150" cy="262" rx="7" ry="2"></ellipse>
+        </g>
+      </svg>
+    </div>
+    <div class="status-line" id="status-line"></div>
+    <div class="expr-label" id="expr-label">bereit</div>
+  </section>
+
+  <section class="chat-panel">
+    <h1>Sprich mit mir.</h1>
+    <div class="sub">Tippen oder Mikrofon nutzen — Antwort wird gesprochen &amp; das Gesicht reagiert in Echtzeit</div>
+    <div class="transcript" id="transcript"></div>
+    <div class="input-row">
+      <button class="round-btn mic" id="mic-btn" title="Spracheingabe" aria-label="Mikrofon">🎙</button>
+      <input type="text" id="text-input" placeholder="Nachricht eingeben …" autocomplete="off" />
+      <button class="round-btn send" id="send-btn" title="Senden" aria-label="Senden">➤</button>
+    </div>
+    <div class="hint" id="hint-line">Erst in den Einstellungen (⚙) deinen API-Key hinterlegen, dann kann's losgehen.</div>
+  </section>
+</main>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2>Verbindung zum Sprachmodell</h2>
+    <div class="modal-sub">Diese Seite läuft komplett im Browser — sie hat kein eigenes Backend. Anfragen gehen direkt von deinem Browser an den gewählten Anbieter.</div>
+
+    <div class="field">
+      <label>Anbieter</label>
+      <select id="cfg-provider">
+        <option value="openai">OpenAI (api.openai.com)</option>
+        <option value="anthropic">Anthropic / Claude (api.anthropic.com)</option>
+        <option value="ollama">Ollama — lokal (localhost:11434)</option>
+        <option value="custom">Eigener Endpoint (OpenAI-kompatibel)</option>
+      </select>
+    </div>
+
+    <div class="field" id="endpoint-field" style="display:none;">
+      <label>Endpoint-URL</label>
+      <input type="text" id="cfg-endpoint" placeholder="https://dein-server.tld/v1/chat/completions" />
+    </div>
+
+    <div class="field">
+      <label>API-Key</label>
+      <input type="password" id="cfg-apikey" placeholder="sk-… (bei lokalem Ollama leer lassen)" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label>Modell</label>
+      <input type="text" id="cfg-model" placeholder="z.B. gpt-4o-mini / claude-sonnet-4-6 / llama3.1" />
+    </div>
+
+    <div class="field">
+      <label>Sprache (Spracherkennung &amp; -ausgabe)</label>
+      <select id="cfg-lang">
+        <option value="de-DE">Deutsch</option>
+        <option value="en-US">English</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>System-Prompt (Persönlichkeit)</label>
+      <textarea id="cfg-systemprompt"></textarea>
+      <div class="field-note">Tipp: kurze Sätze fordern hilft — die Antworten werden vorgelesen.</div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel">Abbrechen</button>
+      <button class="btn primary" id="modal-save">Speichern</button>
+    </div>
+
+    <div class="key-warning">
+      <b>Hinweis zur Sicherheit:</b> Dein API-Key wird ausschließlich lokal in deinem Browser (localStorage) gespeichert und bei jeder Nachricht direkt an den API-Anbieter gesendet — niemals an CROWNÆTH oder einen Drittserver. Manche Anbieter blockieren direkte Browser-Anfragen (CORS). Falls Anfragen fehlschlagen, nutze z.B. einen lokalen Ollama-Server oder ein eigenes Backend als Proxy für deinen Schlüssel.
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------------------------------------------------------
+   * CONFIG (persisted in localStorage — never leaves the browser
+   * except as a direct request to the provider you choose)
+   * --------------------------------------------------------- */
+  const CONFIG_KEY = 'crownaeth_avatar_config_v1';
+  const defaultConfig = {
+    provider: 'openai',
+    apiKey: '',
+    model: '',
+    endpoint: '',
+    lang: 'de-DE',
+    systemPrompt: 'Du bist ein freundlicher, lockerer KI-Assistent mit einem animierten Gesicht. Antworte natürlich gesprochen, in 1-3 kurzen Sätzen, damit die Sprachausgabe gut klingt. Keine Aufzählungen, kein Markdown.'
+  };
+
+  function loadConfig() {
+    try { return Object.assign({}, defaultConfig, JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}')); }
+    catch (e) { return Object.assign({}, defaultConfig); }
+  }
+  function saveConfig(cfg) { localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg)); }
+
+  let config = loadConfig();
+  let history = []; // {role:'user'|'assistant', content:string}
+
+  /* ---------------------------------------------------------
+   * DOM refs
+   * --------------------------------------------------------- */
+  const $ = (id) => document.getElementById(id);
+  const transcriptEl = $('transcript');
+  const textInput = $('text-input');
+  const sendBtn = $('send-btn');
+  const micBtn = $('mic-btn');
+  const statusEl = $('status-line');
+  const exprLabel = $('expr-label');
+  const ring = $('avatar-ring');
+  const hintLine = $('hint-line');
+
+  const modalOverlay = $('modal-overlay');
+  const cfgProvider = $('cfg-provider');
+  const cfgEndpoint = $('cfg-endpoint');
+  const cfgEndpointField = $('endpoint-field');
+  const cfgApiKey = $('cfg-apikey');
+  const cfgModel = $('cfg-model');
+  const cfgLang = $('cfg-lang');
+  const cfgSystemPrompt = $('cfg-systemprompt');
+
+  const browL = $('brow-l');
+  const browR = $('brow-r');
+  const eyeL = $('eye-l');
+  const eyeR = $('eye-r');
+  const pupilWrapL = $('pupil-wrap-l');
+  const pupilWrapR = $('pupil-wrap-r');
+  const mouthEl = $('mouth');
+  const lipHighlight = $('lip-highlight');
+  const faceGroup = $('face-group');
+
+  /* ---------------------------------------------------------
+   * FACE / EXPRESSION ENGINE
+   * Parametric SVG face: every frame we lerp "current" toward
+   * "target" values, then redraw eyes / brows / mouth from them.
+   * --------------------------------------------------------- */
+  const baseParams = {
+    smile: 0.15,      // -1 (frown) .. 1 (big smile)
+    browLAngle: 0, browLY: 0,
+    browRAngle: 0, browRY: 0,
+    eyeOpen: 1,       // eyelid scale
+    pupilX: 0, pupilY: 0,
+    headTilt: 0,      // degrees
+    mouthBase: 0      // resting mouth-open amount (e.g. surprised "o")
+  };
+
+  const EXPRESSIONS = {
+    neutral:   {},
+    happy:     { smile: 0.85, browLAngle: -6, browRAngle: 6, browLY: -2, browRY: -2, eyeOpen: 0.8 },
+    listening: { smile: 0.1, browLAngle: -8, browRAngle: 8, browLY: -3, browRY: -3, eyeOpen: 1.1 },
+    thinking:  { smile: -0.05, browLAngle: -12, browRAngle: 6, browLY: -2, browRY: 1, pupilX: 7, pupilY: -3, headTilt: 5 },
+    surprised: { smile: -0.15, browLAngle: -14, browRAngle: 14, browLY: -7, browRY: -7, eyeOpen: 1.3, mouthBase: 0.3 },
+    talking:   { smile: 0.3 }
+  };
+
+  let current = Object.assign({}, baseParams);
+  let target = Object.assign({}, baseParams);
+  let currentExpression = 'neutral';
+
+  function setExpression(name) {
+    if (!EXPRESSIONS[name]) name = 'neutral';
+    target = Object.assign({}, baseParams, EXPRESSIONS[name]);
+    currentExpression = name;
+    exprLabel.textContent = name;
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function mouthPath(openness, smile) {
+    const cx = 150, midY = 256;
+    const hw = 19 + smile * 2;
+    const cornerLift = smile * 6;
+    const cornerY = midY - cornerLift;
+    const curviness = 6 + smile * 4;
+    const gap = openness * 26;
+    const topY = cornerY - curviness - gap / 2;
+    const botY = cornerY + curviness + gap / 2;
+    return 'M ' + (cx - hw) + ' ' + cornerY +
+           ' Q ' + cx + ' ' + topY + ' ' + (cx + hw) + ' ' + cornerY +
+           ' Q ' + cx + ' ' + botY + ' ' + (cx - hw) + ' ' + cornerY + ' Z';
+  }
+
+  /* Blinking */
+  let blinkFactor = 1;
+  function blink() {
+    const start = performance.now();
+    const dur = 140;
+    function step(now) {
+      const t = Math.min(1, (now - start) / dur);
+      blinkFactor = t < 0.5 ? (1 - t * 2) : ((t - 0.5) * 2);
+      if (t < 1) requestAnimationFrame(step); else blinkFactor = 1;
+    }
+    requestAnimationFrame(step);
+  }
+  function scheduleBlink() {
+    setTimeout(function () { blink(); scheduleBlink(); }, 2200 + Math.random() * 3500);
+  }
+  scheduleBlink();
+
+  /* Speaking-driven mouth "chatter" (Web Speech API gives us no
+   * phoneme/viseme data, so we approximate lip movement with
+   * randomized bursts timed roughly to the spoken words) */
+  let isSpeaking = false;
+  let speakOpenness = 0;
+  let speakTargetOpenness = 0;
+  let chatterInterval = null;
+  function triggerMouthBurst() {
+    speakTargetOpenness = 0.3 + Math.random() * 0.6;
+    setTimeout(function () { if (isSpeaking) speakTargetOpenness = 0.06; }, 90 + Math.random() * 90);
+  }
+
+  /* Render loop */
+  function tick() {
+    for (const k in target) current[k] = lerp(current[k], target[k], 0.08);
+    speakOpenness = lerp(speakOpenness, speakTargetOpenness, 0.35);
+
+    const openness = Math.min(1, current.mouthBase + (isSpeaking ? speakOpenness : 0));
+    mouthEl.setAttribute('d', mouthPath(openness, current.smile));
+    lipHighlight.setAttribute('cy', String(256 - current.smile * 6 - 4 - openness * 6));
+    lipHighlight.style.opacity = String(Math.max(0, 0.2 * (1 - openness * 1.6)));
+
+    browL.setAttribute('transform', 'translate(120,' + (179 + current.browLY) + ') rotate(' + current.browLAngle + ')');
+    browR.setAttribute('transform', 'translate(180,' + (179 + current.browRY) + ') rotate(' + current.browRAngle + ')');
+
+    eyeL.setAttribute('transform', 'translate(120,196) scale(1,' + (current.eyeOpen * blinkFactor) + ')');
+    eyeR.setAttribute('transform', 'translate(180,196) scale(1,' + (current.eyeOpen * blinkFactor) + ')');
+    pupilWrapL.setAttribute('transform', 'translate(' + current.pupilX + ',' + current.pupilY + ')');
+    pupilWrapR.setAttribute('transform', 'translate(' + current.pupilX + ',' + current.pupilY + ')');
+
+    faceGroup.style.transform = 'rotate(' + current.headTilt + 'deg)';
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+  setExpression('neutral');
+
+  /* ---------------------------------------------------------
+   * CHAT TRANSCRIPT
+   * --------------------------------------------------------- */
+  function addMessage(role, text) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    const roleLabel = document.createElement('span');
+    roleLabel.className = 'role';
+    roleLabel.textContent = role === 'user' ? 'Du' : 'CROWNÆTH AI';
+    const body = document.createElement('div');
+    body.textContent = text;
+    div.appendChild(roleLabel);
+    div.appendChild(body);
+    transcriptEl.appendChild(div);
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+  }
+
+  /* ---------------------------------------------------------
+   * EMOTION HEURISTIC — picks a facial expression from the
+   * model's reply text (no extra API call, just keyword/punct cues)
+   * --------------------------------------------------------- */
+  function detectEmotion(text) {
+    const t = text.toLowerCase();
+    if (/(wow|krass|unglaublich|whoa|incredible|wild|amazing|holy)/.test(t)) return 'surprised';
+    if (/!/.test(text) && /(toll|super|freu|cool|geil|schön|nice|awesome|great|love|haha|liebe)/.test(t)) return 'happy';
+    if (/\?/.test(text) || /(hmm|vielleicht|überlege|denke ich|glaube|maybe|perhaps|let me think|keine ahnung)/.test(t)) return 'thinking';
+    return 'talking';
+  }
+
+  /* ---------------------------------------------------------
+   * LLM CONNECTION — direct browser → provider request.
+   * Supports OpenAI-style chat-completions, Anthropic messages,
+   * a local Ollama server, or any custom OpenAI-compatible endpoint.
+   * --------------------------------------------------------- */
+  function getEndpoint(cfg) {
+    switch (cfg.provider) {
+      case 'openai': return 'https://api.openai.com/v1/chat/completions';
+      case 'anthropic': return 'https://api.anthropic.com/v1/messages';
+      case 'ollama': return 'http://localhost:11434/v1/chat/completions';
+      case 'custom': return cfg.endpoint;
+      default: return '';
+    }
+  }
+
+  async function callLLM(msgHistory) {
+    const cfg = config;
+    const endpoint = getEndpoint(cfg);
+    if (!endpoint) throw new Error('Kein Endpoint konfiguriert.');
+
+    if (cfg.provider === 'anthropic') {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': cfg.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: cfg.model || 'claude-sonnet-4-6',
+          max_tokens: 1024,
+          system: cfg.systemPrompt,
+          messages: msgHistory.map(function (m) { return { role: m.role, content: m.content }; })
+        })
+      });
+      if (!res.ok) throw new Error('Anthropic API: HTTP ' + res.status + ' — ' + (await res.text()).slice(0, 300));
+      const data = await res.json();
+      return (data.content && data.content[0] && data.content[0].text) || '';
+    }
+
+    // OpenAI-compatible (OpenAI, Ollama, custom)
+    const headers = { 'content-type': 'application/json' };
+    if (cfg.apiKey) headers['Authorization'] = 'Bearer ' + cfg.apiKey;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        model: cfg.model || 'gpt-4o-mini',
+        messages: [{ role: 'system', content: cfg.systemPrompt }].concat(msgHistory)
+      })
+    });
+    if (!res.ok) throw new Error('API: HTTP ' + res.status + ' — ' + (await res.text()).slice(0, 300));
+    const data = await res.json();
+    return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+  }
+
+  /* ---------------------------------------------------------
+   * TEXT-TO-SPEECH with lip-sync overlay
+   * --------------------------------------------------------- */
+  function speak(text) {
+    return new Promise(function (resolve) {
+      if (!('speechSynthesis' in window) || !text) { resolve(); return; }
+      try { speechSynthesis.cancel(); } catch (e) {}
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = config.lang;
+      utter.rate = 1;
+      utter.onstart = function () {
+        isSpeaking = true;
+        statusEl.textContent = 'SPRICHT …';
+        chatterInterval = setInterval(triggerMouthBurst, 130);
+      };
+      const finish = function () {
+        isSpeaking = false;
+        speakTargetOpenness = 0;
+        clearInterval(chatterInterval);
+        statusEl.textContent = '';
+        resolve();
+      };
+      utter.onend = finish;
+      utter.onerror = finish;
+      speechSynthesis.speak(utter);
+    });
+  }
+
+  /* ---------------------------------------------------------
+   * SEND / RECEIVE FLOW
+   * --------------------------------------------------------- */
+  let busy = false;
+  async function sendMessage(text) {
+    text = (text || '').trim();
+    if (!text || busy) return;
+    if (!config.apiKey && config.provider !== 'ollama') {
+      addMessage('assistant', 'Bitte zuerst einen API-Key in den Einstellungen (⚙ oben rechts) hinterlegen.');
+      openModal();
+      return;
+    }
+    busy = true;
+    textInput.value = '';
+    addMessage('user', text);
+    history.push({ role: 'user', content: text });
+    setExpression('thinking');
+    statusEl.textContent = 'DENKT NACH …';
+
+    try {
+      const reply = await callLLM(history);
+      history.push({ role: 'assistant', content: reply });
+      addMessage('assistant', reply || '…');
+      const emotion = detectEmotion(reply);
+      setExpression(emotion);
+      statusEl.textContent = '';
+      await speak(reply);
+    } catch (err) {
+      addMessage('assistant', '⚠ ' + err.message);
+      statusEl.textContent = '';
+    } finally {
+      setExpression('neutral');
+      busy = false;
+    }
+  }
+
+  sendBtn.addEventListener('click', function () { sendMessage(textInput.value); });
+  textInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') sendMessage(textInput.value);
+  });
+
+  /* ---------------------------------------------------------
+   * SPEECH RECOGNITION (microphone input)
+   * --------------------------------------------------------- */
+  const SpeechRecognitionImpl = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  if (SpeechRecognitionImpl) {
+    recognition = new SpeechRecognitionImpl();
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.onresult = function (e) {
+      const text = e.results[0][0].transcript;
+      sendMessage(text);
+    };
+    recognition.onerror = function () {
+      micBtn.classList.remove('active');
+      ring.classList.remove('listening');
+      setExpression('neutral');
+      statusEl.textContent = '';
+    };
+    recognition.onend = function () {
+      micBtn.classList.remove('active');
+      ring.classList.remove('listening');
+      if (currentExpression === 'listening') setExpression('neutral');
+      statusEl.textContent = '';
+    };
+  } else {
+    micBtn.disabled = true;
+    micBtn.title = 'Spracherkennung wird von diesem Browser nicht unterstützt (z.B. Chrome verwenden)';
+  }
+
+  micBtn.addEventListener('click', function () {
+    if (!recognition || busy) return;
+    recognition.lang = config.lang;
+    try {
+      recognition.start();
+      micBtn.classList.add('active');
+      ring.classList.add('listening');
+      setExpression('listening');
+      statusEl.textContent = 'HÖRT ZU …';
+    } catch (e) {}
+  });
+
+  /* ---------------------------------------------------------
+   * SETTINGS MODAL
+   * --------------------------------------------------------- */
+  function openModal() {
+    cfgProvider.value = config.provider;
+    cfgEndpoint.value = config.endpoint;
+    cfgApiKey.value = config.apiKey;
+    cfgModel.value = config.model;
+    cfgLang.value = config.lang;
+    cfgSystemPrompt.value = config.systemPrompt;
+    toggleEndpointField();
+    modalOverlay.classList.add('open');
+  }
+  function closeModal() { modalOverlay.classList.remove('open'); }
+  function toggleEndpointField() {
+    cfgEndpointField.style.display = (cfgProvider.value === 'custom') ? 'block' : 'none';
+  }
+
+  $('settings-btn').addEventListener('click', openModal);
+  $('modal-cancel').addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', function (e) { if (e.target === modalOverlay) closeModal(); });
+  cfgProvider.addEventListener('change', toggleEndpointField);
+
+  $('modal-save').addEventListener('click', function () {
+    config = {
+      provider: cfgProvider.value,
+      endpoint: cfgEndpoint.value.trim(),
+      apiKey: cfgApiKey.value.trim(),
+      model: cfgModel.value.trim(),
+      lang: cfgLang.value,
+      systemPrompt: cfgSystemPrompt.value.trim() || defaultConfig.systemPrompt
+    };
+    saveConfig(config);
+    closeModal();
+    hintLine.textContent = (config.apiKey || config.provider === 'ollama')
+      ? 'Verbindung konfiguriert — leg los, tippen oder 🎙 drücken.'
+      : 'Erst in den Einstellungen (⚙) deinen API-Key hinterlegen, dann kann\'s losgehen.';
+  });
+
+  /* Initial UI state */
+  hintLine.textContent = (config.apiKey || config.provider === 'ollama')
+    ? 'Verbindung konfiguriert — leg los, tippen oder 🎙 drücken.'
+    : 'Erst in den Einstellungen (⚙) deinen API-Key hinterlegen, dann kann\'s losgehen.';
+  if (!config.apiKey && config.provider !== 'ollama') {
+    setTimeout(openModal, 400);
+  }
+  addMessage('assistant', 'Hey! Ich bin der CROWNÆTH AI Avatar. Verbinde mich oben rechts (⚙) mit deinem Sprachmodell — dann können wir reden.');
+
+  /* PWA: register service worker so the app is installable on phones
+   * (Android: "Zum Startbildschirm hinzufügen" → läuft im Vollbild wie eine App) */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

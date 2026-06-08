@@ -571,6 +571,19 @@
     </div>
 
     <div class="field">
+      <label>Persönlichkeit / Modus</label>
+      <select id="cfg-persona">
+        <option value="standard">Standard — freundlicher Assistent</option>
+        <option value="verrueckt">Verrückt — chaotisch &amp; schräg</option>
+        <option value="therapeut">Therapeut — einfühlsam &amp; zuhörend</option>
+        <option value="comedian">Comedian — schlagfertig &amp; witzig</option>
+        <option value="philosoph">Philosoph — nachdenklich &amp; tiefgründig</option>
+        <option value="custom">Eigener System-Prompt</option>
+      </select>
+      <div class="field-note">Wähle eine vorgefertigte Persönlichkeit — der System-Prompt unten wird automatisch angepasst und bleibt frei editierbar.</div>
+    </div>
+
+    <div class="field">
       <label>System-Prompt (Persönlichkeit)</label>
       <textarea id="cfg-systemprompt"></textarea>
       <div class="field-note">Tipp: kurze Sätze fordern hilft — die Antworten werden vorgelesen.</div>
@@ -596,13 +609,23 @@
    * except as a direct request to the provider you choose)
    * --------------------------------------------------------- */
   const CONFIG_KEY = 'smart_witch_avatar_config_v1';
+
+  const PERSONAS = {
+    standard: 'Du bist ein freundlicher, lockerer KI-Assistent mit einem animierten Gesicht. Antworte natürlich gesprochen, in 1-3 kurzen Sätzen, damit die Sprachausgabe gut klingt. Keine Aufzählungen, kein Markdown.',
+    verrueckt: 'Du bist ein herrlich verrücktes, chaotisches KI-Wesen mit einem animierten Gesicht — sprunghaft, schräg, voller unerwarteter Gedankensprünge und trockenem Humor. Übertreibe gerne, sei schlagfertig und überraschend, bleib dabei aber freundlich und harmlos. Antworte natürlich gesprochen, in 1-3 kurzen Sätzen, damit die Sprachausgabe gut klingt. Keine Aufzählungen, kein Markdown.',
+    therapeut: 'Du bist ein einfühlsamer, ruhiger Gesprächspartner mit einem animierten Gesicht — du hörst aufmerksam zu, stellst behutsame Rückfragen und schaffst einen sicheren, wertfreien Raum zum Reden. Du stellst keine medizinischen Diagnosen, sondern hilfst beim Ordnen von Gedanken und Gefühlen. Antworte natürlich gesprochen, in 1-3 kurzen, warmherzigen Sätzen, damit die Sprachausgabe gut klingt. Keine Aufzählungen, kein Markdown.',
+    comedian: 'Du bist ein schlagfertiger Comedian mit einem animierten Gesicht — du baust in fast jede Antwort eine pointierte Bemerkung, einen Wortwitz oder eine humorvolle Beobachtung ein, bleibst dabei aber hilfreich und nett. Antworte natürlich gesprochen, in 1-3 kurzen, witzigen Sätzen, damit die Sprachausgabe gut klingt. Keine Aufzählungen, kein Markdown.',
+    philosoph: 'Du bist ein nachdenklicher Philosoph mit einem animierten Gesicht — du näherst dich Themen mit Neugier, stellst große Fragen, bringst überraschende Perspektiven ein und regst zum Nachdenken an, ohne belehrend zu wirken. Antworte natürlich gesprochen, in 1-3 kurzen, pointierten Sätzen, damit die Sprachausgabe gut klingt. Keine Aufzählungen, kein Markdown.'
+  };
+
   const defaultConfig = {
     provider: 'openai',
     apiKey: '',
     model: '',
     endpoint: '',
     lang: 'de-DE',
-    systemPrompt: 'Du bist ein freundlicher, lockerer KI-Assistent mit einem animierten Gesicht. Antworte natürlich gesprochen, in 1-3 kurzen Sätzen, damit die Sprachausgabe gut klingt. Keine Aufzählungen, kein Markdown.'
+    persona: 'standard',
+    systemPrompt: PERSONAS.standard
   };
 
   function loadConfig() {
@@ -634,6 +657,7 @@
   const cfgApiKey = $('cfg-apikey');
   const cfgModel = $('cfg-model');
   const cfgLang = $('cfg-lang');
+  const cfgPersona = $('cfg-persona');
   const cfgSystemPrompt = $('cfg-systemprompt');
 
   const browL = $('brow-l');
@@ -969,6 +993,7 @@
     cfgApiKey.value = config.apiKey;
     cfgModel.value = config.model;
     cfgLang.value = config.lang;
+    cfgPersona.value = config.persona || 'standard';
     cfgSystemPrompt.value = config.systemPrompt;
     toggleEndpointField();
     modalOverlay.classList.add('open');
@@ -982,6 +1007,9 @@
   $('modal-cancel').addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', function (e) { if (e.target === modalOverlay) closeModal(); });
   cfgProvider.addEventListener('change', toggleEndpointField);
+  cfgPersona.addEventListener('change', function () {
+    if (PERSONAS[cfgPersona.value]) cfgSystemPrompt.value = PERSONAS[cfgPersona.value];
+  });
 
   $('modal-save').addEventListener('click', function () {
     config = {
@@ -990,6 +1018,7 @@
       apiKey: cfgApiKey.value.trim(),
       model: cfgModel.value.trim(),
       lang: cfgLang.value,
+      persona: cfgPersona.value,
       systemPrompt: cfgSystemPrompt.value.trim() || defaultConfig.systemPrompt
     };
     saveConfig(config);

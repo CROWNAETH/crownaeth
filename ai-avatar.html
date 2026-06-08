@@ -151,6 +151,7 @@
   .neck { fill: url(#skinGrad); }
   .neck-shade { fill: url(#shadowGrad); opacity: 0.55; }
   .cheek-glow { fill: #fff7ec; opacity: 0.22; }
+  .hat-shadow { fill: #000000; opacity: 0.28; }
   .hat-brim, .hat-cone { fill: url(#hatGrad); stroke: rgba(0,0,0,0.4); stroke-width: 1; }
   .hat-band { fill: #5b3a7a; opacity: 0.85; }
   .hat-buckle { fill: #c9a45c; stroke: #8a6d3a; stroke-width: 0.6; }
@@ -369,7 +370,7 @@
 <main>
   <section class="stage">
     <div class="avatar-ring" id="avatar-ring">
-      <svg id="avatar-svg" viewBox="0 -100 300 440" xmlns="http://www.w3.org/2000/svg">
+      <svg id="avatar-svg" viewBox="0 -150 300 490" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="skinGrad" cx="50%" cy="32%" r="75%">
             <stop offset="0%" stop-color="#fce4cf"></stop>
@@ -425,11 +426,12 @@
           <path class="hair-wisp" d="M95,132 C88,121 85,109 91,99"></path>
           <path class="hair-wisp" d="M205,132 C212,121 215,109 209,99"></path>
 
-          <g class="witch-hat">
-            <ellipse class="hat-brim" cx="150" cy="80" rx="72" ry="14"></ellipse>
-            <path class="hat-cone" d="M122,78 C126,30 134,-20 145,-70 C148,-82 158,-80 158,-68 C162,-18 166,32 178,78 Z"></path>
-            <path class="hat-band" d="M125,63 Q150,75 175,63 Q150,82 125,63 Z"></path>
-            <rect class="hat-buckle" x="145.5" y="65.5" width="9" height="9" rx="1.5" transform="rotate(45 150 70)"></rect>
+          <g class="witch-hat" transform="rotate(-4 150 70)">
+            <ellipse class="hat-shadow" cx="150" cy="84" rx="64" ry="11" filter="url(#soften)"></ellipse>
+            <ellipse class="hat-brim" cx="150" cy="70" rx="102" ry="20"></ellipse>
+            <path class="hat-cone" d="M104,70 C109,2 121,-70 140,-138 C144,-155 160,-153 156,-136 C163,-66 173,4 196,70 Z"></path>
+            <path class="hat-band" d="M111,54 Q150,72 189,54 Q150,82 111,54 Z"></path>
+            <rect class="hat-buckle" x="143.5" y="57.5" width="13" height="13" rx="2" transform="rotate(45 150 64)"></rect>
           </g>
 
           <ellipse class="ear" cx="84" cy="205" rx="9" ry="14"></ellipse>

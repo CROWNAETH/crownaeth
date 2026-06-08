@@ -1,6 +1,6 @@
 {
-  "name": "CROWNÆTH AI Avatar",
-  "short_name": "CROWNÆTH AI",
+  "name": "Smart Witch AI Avatar",
+  "short_name": "Smart Witch",
   "description": "Sprich mit einem animierten KI-Gesicht — Lippensynchronisation, Mimik & Gestik, verbunden mit deinem Sprachmodell.",
   "start_url": "./ai-avatar.html",
   "scope": "./",

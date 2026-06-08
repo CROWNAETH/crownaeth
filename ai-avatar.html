@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CROWNÆTH — AI Avatar</title>
+<title>Smart Witch — KI Avatar</title>
 <meta name="description" content="Sprich mit einem animierten KI-Gesicht — Lippensynchronisation, Mimik & Gestik, verbunden mit einem Sprachmodell deiner Wahl." />
 <meta name="theme-color" content="#000000" />
 <link rel="manifest" href="manifest.json" />
@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="CROWNÆTH AI" />
+<meta name="apple-mobile-web-app-title" content="Smart Witch" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
@@ -360,7 +360,7 @@
 <body>
 
 <header class="app-header">
-  <div class="brand">CROWNÆTH <small>AI AVATAR</small></div>
+  <div class="brand">SMART WITCH <small>AI AVATAR</small></div>
   <div class="header-actions">
     <a class="back-link" href="index.html">← Zur Hauptseite</a>
     <button class="icon-btn" id="settings-btn" title="Einstellungen / API-Key" aria-label="Einstellungen">⚙</button>
@@ -595,7 +595,7 @@
    * CONFIG (persisted in localStorage — never leaves the browser
    * except as a direct request to the provider you choose)
    * --------------------------------------------------------- */
-  const CONFIG_KEY = 'crownaeth_avatar_config_v1';
+  const CONFIG_KEY = 'smart_witch_avatar_config_v1';
   const defaultConfig = {
     provider: 'openai',
     apiKey: '',
@@ -759,7 +759,7 @@
     div.className = 'msg ' + role;
     const roleLabel = document.createElement('span');
     roleLabel.className = 'role';
-    roleLabel.textContent = role === 'user' ? 'Du' : 'CROWNÆTH AI';
+    roleLabel.textContent = role === 'user' ? 'Du' : 'Smart Witch';
     const body = document.createElement('div');
     body.textContent = text;
     div.appendChild(roleLabel);
@@ -994,7 +994,7 @@
   if (!config.apiKey && config.provider !== 'ollama') {
     setTimeout(openModal, 400);
   }
-  addMessage('assistant', 'Hey! Ich bin der CROWNÆTH AI Avatar. Verbinde mich oben rechts (⚙) mit deinem Sprachmodell — dann können wir reden.');
+  addMessage('assistant', 'Hey! Ich bin Smart Witch. Verbinde mich oben rechts (⚙) mit deinem Sprachmodell — dann können wir reden.');
 
   /* PWA: register service worker so the app is installable on phones
    * (Android: "Zum Startbildschirm hinzufügen" → läuft im Vollbild wie eine App) */

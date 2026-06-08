@@ -667,7 +667,13 @@
     listening: { smile: 0.1, browLAngle: -8, browRAngle: 8, browLY: -3, browRY: -3, eyeOpen: 1.1 },
     thinking:  { smile: -0.05, browLAngle: -12, browRAngle: 6, browLY: -2, browRY: 1, pupilX: 7, pupilY: -3, headTilt: 5 },
     surprised: { smile: -0.15, browLAngle: -14, browRAngle: 14, browLY: -7, browRY: -7, eyeOpen: 1.3, mouthBase: 0.3 },
-    talking:   { smile: 0.3 }
+    talking:   { smile: 0.3 },
+    angry:     { smile: -0.6, browLAngle: 16, browRAngle: -16, browLY: 3, browRY: 3, eyeOpen: 0.6, mouthBase: 0.05 },
+    sad:       { smile: -0.5, browLAngle: -9, browRAngle: 9, browLY: -3, browRY: -3, eyeOpen: 0.65, pupilY: 2, headTilt: 6 },
+    scared:    { smile: -0.3, browLAngle: -11, browRAngle: 11, browLY: -6, browRY: -6, eyeOpen: 1.35, mouthBase: 0.16, headTilt: -4 },
+    disgusted: { smile: -0.45, browLAngle: 9, browRAngle: -5, browLY: 2, browRY: -1, eyeOpen: 0.6, mouthBase: 0.04 },
+    bored:     { smile: -0.2, browLAngle: -2, browRAngle: 2, browLY: 2, browRY: 2, eyeOpen: 0.4, pupilX: -5, pupilY: 3, headTilt: -7 },
+    confused:  { smile: -0.1, browLAngle: -15, browRAngle: 9, browLY: -4, browRY: 1, pupilX: -4, headTilt: -9 }
   };
 
   let current = Object.assign({}, baseParams);
@@ -775,6 +781,12 @@
   function detectEmotion(text) {
     const t = text.toLowerCase();
     if (/(wow|krass|unglaublich|whoa|incredible|wild|amazing|holy)/.test(t)) return 'surprised';
+    if (/(angst|ängstlich|erschrocken|verängstigt|gruselig|schreck|panik|scared|afraid|terrified|terrifying|scary|panic)/.test(t)) return 'scared';
+    if (/(wütend|sauer|ärgerlich|genervt|verärgert|zornig|stinksauer|angry|mad|furious|pissed|hasse|grr+)/.test(t)) return 'angry';
+    if (/(ekel|eklig|ekelhaft|angewidert|igitt|pfui|disgusting|gross|yuck|eww)/.test(t)) return 'disgusted';
+    if (/(traurig|schade|leider|tut mir leid|deprimiert|niedergeschlagen|weinen|sad|depressing|unfortunately)/.test(t)) return 'sad';
+    if (/(langweilig|gelangweilt|öde|ermüdend|eintönig|boring|bored|meh\b|gähn|yawn)/.test(t)) return 'bored';
+    if (/(verwirrt|verwirrend|seltsam|komisch|häh|hä\?|confused|confusing|weird|strange)/.test(t)) return 'confused';
     if (/!/.test(text) && /(toll|super|freu|cool|geil|schön|nice|awesome|great|love|haha|liebe)/.test(t)) return 'happy';
     if (/\?/.test(text) || /(hmm|vielleicht|überlege|denke ich|glaube|maybe|perhaps|let me think|keine ahnung)/.test(t)) return 'thinking';
     return 'talking';

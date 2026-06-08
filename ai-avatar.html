@@ -147,8 +147,13 @@
   }
   #avatar-svg { width: 100%; height: 100%; filter: drop-shadow(0 0 26px var(--accent-glow)); }
   #face-group { transform-box: fill-box; transform-origin: center; }
+  .collar { fill: url(#collarGrad); }
+  .neck { fill: url(#skinGrad); }
+  .neck-shade { fill: url(#shadowGrad); opacity: 0.55; }
+  .cheek-glow { fill: #fff7ec; opacity: 0.22; }
   .hair-back, .hair-front { fill: url(#hairGrad); }
   .hair-strand { stroke: var(--hair-dark); stroke-width: 1.3; fill: none; opacity: 0.32; stroke-linecap: round; }
+  .hair-wisp { stroke: var(--hair); stroke-width: 1.1; fill: none; opacity: 0.5; stroke-linecap: round; }
   .face-shape { fill: url(#skinGrad); stroke: rgba(150,100,70,0.25); stroke-width: 1; }
   .ear { fill: url(#skinGrad); stroke: rgba(150,100,70,0.25); stroke-width: 1; }
   .jaw-shade { fill: url(#shadowGrad); }
@@ -158,6 +163,7 @@
   .eyebrow { transform-box: fill-box; transform-origin: center; }
   .eyebrow .brow-base { stroke: var(--brow); stroke-width: 4; fill: none; stroke-linecap: round; }
   .eyebrow .brow-hl { stroke: #e2c48d; stroke-width: 1.5; fill: none; stroke-linecap: round; opacity: 0.55; }
+  .eyebrow .brow-hair { stroke: var(--hair-dark); stroke-width: 0.8; fill: none; stroke-linecap: round; opacity: 0.45; }
   .eye { transform-box: fill-box; transform-origin: center; }
   .eyelid-crease { stroke: var(--skin-shadow); stroke-width: 1; fill: none; opacity: 0.32; stroke-linecap: round; }
   .undereye { fill: url(#shadowGrad); opacity: 0.4; }
@@ -167,6 +173,7 @@
   .pupil-dot { fill: #241b14; }
   .eye-highlight { fill: #ffffff; opacity: 0.95; }
   .eyelash { stroke: #4a3a2a; stroke-width: 1.5; stroke-linecap: round; }
+  .lower-lash { stroke: #5a4a3a; stroke-width: 0.8; stroke-linecap: round; opacity: 0.35; }
   .mouth { fill: url(#lipGrad); stroke: rgba(120,30,40,0.3); stroke-width: 1; }
   .lip-highlight { fill: #ffffff; opacity: 0.18; }
 
@@ -388,16 +395,27 @@
             <stop offset="0%" stop-color="#9a6c4a" stop-opacity="0.3"></stop>
             <stop offset="100%" stop-color="#9a6c4a" stop-opacity="0"></stop>
           </radialGradient>
+          <linearGradient id="collarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#2b2024"></stop>
+            <stop offset="100%" stop-color="#0a0707"></stop>
+          </linearGradient>
           <filter id="soften" x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="3.2"></feGaussianBlur>
           </filter>
         </defs>
         <g id="face-group">
+          <path class="collar" d="M22,340 C30,298 88,276 150,276 C212,276 270,298 278,340 Z"></path>
+          <path class="neck" d="M127,258 C127,288 129,316 132,340 L168,340 C171,316 173,288 173,258 C164,278 136,278 127,258 Z"></path>
+          <ellipse class="neck-shade" cx="150" cy="263" rx="25" ry="11" filter="url(#soften)"></ellipse>
           <path class="hair-back" d="M150,60 C98,60 66,115 66,195 C66,255 94,308 120,328 L128,288 C108,255 102,205 108,158 C113,115 129,92 150,92 C171,92 187,115 192,158 C198,205 192,255 172,288 L180,328 C206,308 234,255 234,195 C234,115 202,60 150,60 Z"></path>
           <path class="hair-strand" d="M104,140 C112,200 107,262 119,322"></path>
           <path class="hair-strand" d="M196,140 C188,200 193,262 181,322"></path>
           <path class="hair-strand" d="M132,108 C129,180 131,252 129,320"></path>
           <path class="hair-strand" d="M168,108 C171,180 169,252 171,320"></path>
+          <path class="hair-strand" d="M118,116 C113,176 116,238 111,300"></path>
+          <path class="hair-strand" d="M182,116 C187,176 184,238 189,300"></path>
+          <path class="hair-wisp" d="M95,132 C88,121 85,109 91,99"></path>
+          <path class="hair-wisp" d="M205,132 C212,121 215,109 209,99"></path>
 
           <ellipse class="ear" cx="84" cy="205" rx="9" ry="14"></ellipse>
           <ellipse class="ear" cx="216" cy="205" rx="9" ry="14"></ellipse>
@@ -407,6 +425,8 @@
           <ellipse class="jaw-shade" cx="194" cy="272" rx="17" ry="28" filter="url(#soften)"></ellipse>
           <ellipse class="blush" cx="119" cy="234" rx="19" ry="12" filter="url(#soften)"></ellipse>
           <ellipse class="blush" cx="181" cy="234" rx="19" ry="12" filter="url(#soften)"></ellipse>
+          <ellipse class="cheek-glow" cx="124" cy="219" rx="10" ry="6" filter="url(#soften)"></ellipse>
+          <ellipse class="cheek-glow" cx="176" cy="219" rx="10" ry="6" filter="url(#soften)"></ellipse>
 
           <path class="nose" d="M150,212 Q145,228 150,236 Q154,238 150,240"></path>
           <ellipse class="nose-shadow" cx="150" cy="239" rx="7" ry="2.6" filter="url(#soften)"></ellipse>
@@ -416,10 +436,18 @@
           <g class="eyebrow" id="brow-l">
             <path class="brow-base" d="M-17,4 Q0,-8 17,4"></path>
             <path class="brow-hl" d="M-12,1.5 Q0,-5 12,1.5"></path>
+            <path class="brow-hair" d="M-14,2.6 Q-12,-3 -9,-1.8"></path>
+            <path class="brow-hair" d="M-6,0.4 Q-4,-6 -1,-4.6"></path>
+            <path class="brow-hair" d="M2,-0.6 Q4,-7 7,-5.4"></path>
+            <path class="brow-hair" d="M9,1 Q12,-5 15,-2.4"></path>
           </g>
           <g class="eyebrow" id="brow-r">
             <path class="brow-base" d="M-17,4 Q0,-8 17,4"></path>
             <path class="brow-hl" d="M-12,1.5 Q0,-5 12,1.5"></path>
+            <path class="brow-hair" d="M-14,2.6 Q-12,-3 -9,-1.8"></path>
+            <path class="brow-hair" d="M-6,0.4 Q-4,-6 -1,-4.6"></path>
+            <path class="brow-hair" d="M2,-0.6 Q4,-7 7,-5.4"></path>
+            <path class="brow-hair" d="M9,1 Q12,-5 15,-2.4"></path>
           </g>
 
           <ellipse class="undereye" cx="120" cy="208" rx="15" ry="5" filter="url(#soften)"></ellipse>
@@ -440,6 +468,10 @@
             <path class="eyelash" d="M-9,-9.5 L-11,-13"></path>
             <path class="eyelash" d="M-1,-10 L-1,-14"></path>
             <path class="eyelash" d="M6,-9 L9,-12.5"></path>
+            <path class="lower-lash" d="M-13,6 L-15,9"></path>
+            <path class="lower-lash" d="M-5,7.5 L-6,10.5"></path>
+            <path class="lower-lash" d="M4,7.5 L5,10.5"></path>
+            <path class="lower-lash" d="M11,6 L13,9"></path>
           </g>
           <g class="eye" id="eye-r">
             <ellipse class="eye-sclera" rx="17" ry="10"></ellipse>
@@ -454,6 +486,10 @@
             <path class="eyelash" d="M9,-9.5 L11,-13"></path>
             <path class="eyelash" d="M1,-10 L1,-14"></path>
             <path class="eyelash" d="M-6,-9 L-9,-12.5"></path>
+            <path class="lower-lash" d="M13,6 L15,9"></path>
+            <path class="lower-lash" d="M5,7.5 L6,10.5"></path>
+            <path class="lower-lash" d="M-4,7.5 L-5,10.5"></path>
+            <path class="lower-lash" d="M-11,6 L-13,9"></path>
           </g>
 
           <path class="mouth" id="mouth"></path>

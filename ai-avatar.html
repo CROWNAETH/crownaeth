@@ -24,8 +24,8 @@
     --line: #1a1a1a;
     --accent: #ff1a1a;
     --accent-glow: rgba(255, 26, 26, 0.4);
-    --skin: #f3cba9;
-    --skin-shadow: #d9a87f;
+    --skin: #fce3cd;
+    --skin-shadow: #e6c2a3;
     --hair: #2b2530;
     --hair-dark: #15121a;
     --iris: #6fb3da;
@@ -118,6 +118,30 @@
     padding: 40px;
     border-right: 1px solid var(--line);
     position: relative;
+  }
+
+  /* INFO WIDGET — time, weather & air quality */
+  .info-widget {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    min-width: 150px;
+    z-index: 2;
+  }
+  .info-time { font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 1px; line-height: 1; }
+  .info-date { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .info-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg); }
+  .info-icon { font-size: 15px; line-height: 1; }
+  @media (max-width: 900px) {
+    .info-widget { position: static; align-self: stretch; margin-bottom: 22px; }
   }
   @media (max-width: 900px) { .stage { border-right: none; border-bottom: 1px solid var(--line); padding: 24px; } }
 
@@ -369,13 +393,25 @@
 
 <main>
   <section class="stage">
+    <div class="info-widget" id="info-widget">
+      <div class="info-time" id="info-time">--:--</div>
+      <div class="info-date" id="info-date">—</div>
+      <div class="info-row">
+        <span class="info-icon" id="weather-icon">🌡️</span>
+        <span id="weather-temp">Lade Wetter…</span>
+      </div>
+      <div class="info-row">
+        <span class="info-icon">🍃</span>
+        <span id="air-aqi">Lade Luftdaten…</span>
+      </div>
+    </div>
     <div class="avatar-ring" id="avatar-ring">
       <svg id="avatar-svg" viewBox="0 -150 300 490" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="skinGrad" cx="50%" cy="32%" r="75%">
-            <stop offset="0%" stop-color="#fce4cf"></stop>
-            <stop offset="55%" stop-color="#f3cba9"></stop>
-            <stop offset="100%" stop-color="#dba87e"></stop>
+            <stop offset="0%" stop-color="#fff5ec"></stop>
+            <stop offset="55%" stop-color="#fce3cd"></stop>
+            <stop offset="100%" stop-color="#e8c3a0"></stop>
           </radialGradient>
           <linearGradient id="hairGrad" x1="0%" y1="0%" x2="15%" y2="100%">
             <stop offset="0%" stop-color="#4a4258"></stop>
@@ -1036,6 +1072,88 @@
     setTimeout(openModal, 400);
   }
   addMessage('assistant', 'Hey! Ich bin Smart Witch. Verbinde mich oben rechts (⚙) mit deinem Sprachmodell — dann können wir reden.');
+
+  /* ---------------------------------------------------------
+   * INFO-WIDGET — Uhrzeit, Wetter & Luftqualität
+   * Nutzt die kostenlosen, schlüssel- und CORS-freien Open-Meteo-APIs;
+   * Standort kommt von der Browser-Geolocation (mit Nutzerfreigabe).
+   * --------------------------------------------------------- */
+  const infoTime = $('info-time');
+  const infoDate = $('info-date');
+  const weatherIcon = $('weather-icon');
+  const weatherTemp = $('weather-temp');
+  const airAqi = $('air-aqi');
+
+  function updateClock() {
+    const now = new Date();
+    infoTime.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    infoDate.textContent = now.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  const WEATHER_ICONS = {
+    0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+    45: '🌫️', 48: '🌫️',
+    51: '🌦️', 53: '🌦️', 55: '🌦️', 56: '🌦️', 57: '🌦️',
+    61: '🌧️', 63: '🌧️', 65: '🌧️', 66: '🌧️', 67: '🌧️',
+    71: '🌨️', 73: '🌨️', 75: '🌨️', 77: '🌨️',
+    80: '🌧️', 81: '🌧️', 82: '⛈️',
+    85: '🌨️', 86: '🌨️',
+    95: '⛈️', 96: '⛈️', 99: '⛈️'
+  };
+
+  function aqiLabel(aqi) {
+    if (aqi <= 20) return 'sehr gut';
+    if (aqi <= 40) return 'gut';
+    if (aqi <= 60) return 'mäßig';
+    if (aqi <= 80) return 'schlecht';
+    if (aqi <= 100) return 'sehr schlecht';
+    return 'gefährlich';
+  }
+
+  async function loadEnvironmentInfo(lat, lon) {
+    try {
+      const [wRes, aRes] = await Promise.all([
+        fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code'),
+        fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + lat + '&longitude=' + lon + '&current=european_aqi')
+      ]);
+      if (wRes.ok) {
+        const w = await wRes.json();
+        const code = w.current && w.current.weather_code;
+        const temp = w.current && w.current.temperature_2m;
+        weatherIcon.textContent = WEATHER_ICONS[code] || '🌡️';
+        weatherTemp.textContent = (temp != null) ? (Math.round(temp) + '°C') : 'n/a';
+      } else {
+        weatherTemp.textContent = 'n/a';
+      }
+      if (aRes.ok) {
+        const a = await aRes.json();
+        const aqi = a.current && a.current.european_aqi;
+        airAqi.textContent = (aqi != null) ? ('AQI ' + Math.round(aqi) + ' · ' + aqiLabel(aqi)) : 'n/a';
+      } else {
+        airAqi.textContent = 'n/a';
+      }
+    } catch (e) {
+      weatherTemp.textContent = 'n/a';
+      airAqi.textContent = 'n/a';
+    }
+  }
+
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      function (pos) { loadEnvironmentInfo(pos.coords.latitude.toFixed(3), pos.coords.longitude.toFixed(3)); },
+      function () {
+        weatherIcon.textContent = '📍';
+        weatherTemp.textContent = 'Standort nicht freigegeben';
+        airAqi.textContent = '';
+      },
+      { timeout: 8000, maximumAge: 600000 }
+    );
+  } else {
+    weatherTemp.textContent = 'n/a';
+    airAqi.textContent = 'n/a';
+  }
 
   /* PWA: register service worker so the app is installable on phones
    * (Android: "Zum Startbildschirm hinzufügen" → läuft im Vollbild wie eine App) */

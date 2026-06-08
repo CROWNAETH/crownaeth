@@ -1,4 +1,4 @@
-const CACHE = 'crownaeth-ai-avatar-v1';
+const CACHE = 'smart-witch-avatar-v2';
 const ASSETS = [
   './ai-avatar.html',
   './manifest.json',
